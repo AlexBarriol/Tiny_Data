@@ -1,19 +1,94 @@
+# In order to be able to open the images
+# install.packages("magick")
+
 # Project 2 template: the tabs and the inputs only. Everything else, and the look of the app, is yours.
 library(shiny)
 
 # Example: read one photo as 4,096 numbers (64 x 64 grayscale, row by row, 0 = black to 255 = white)
-# library(magick)
+library(magick)
 # img <- image_read("shoes/0001.png")
-# x <- as.numeric(t(matrix(as.integer(image_data(img, channels = "gray")), 64, 64)))
+# x <- as.numeric(t(matrix(as.integer(image_data(img, channels = "gray")), 64, 64)))\
 
-ui <- navbarPage("TODO: team name",
+# beginning of our code for tab1
+get_photo_number <- function(path)
+{
+  img <- image_read(path)
+  
+  img <- image_convert(img, colorspace = "gray")
+  img <- image_resize(img, "64x64")
+  img <- image_extent(img, "64x64", color = "white") #in case the photo is not a squere
+
+  result <- as.numeric(as.integer(image_data(img, channels = "gray")))
+  result
+}
+
+csv <- read.csv("shoes_meta.csv")
+labels <- read.csv("selfcheck/labels.csv")
+number <- formatC(csv$id, width = 4, flag = 0)
+files <- paste0("shoes/", number, ".png")
+
+mX <- matrix(0, nrow = 2000, ncol = 4096)
+for (i in 1:2000)
+{
+  mX[i, ] <- get_photo_number(files[i]) #[i, ] return all the row of i, so 4096 number
+}
+
+pca <- prcomp(mX, center = TRUE, scale. = FALSE)
+
+draw <- function(photo)
+{
+  photo <- pmin(pmax(photo, 0), 255)
+  result <- matrix(photo, 64, 64) #picture 64*64
+  plot(as.raster(result / 255))
+}
+
+shoe_search <- function(photo, K, id_excluded)
+{
+  scores_photo <- as.numeric((photo - pca$center) %*% pca$rotation[, 1:K])
+  
+  distance <- numeric(2000)
+  for (i in 1:2000)
+  {
+    if (i == id_excluded)
+    {
+      distance[i] <- Inf
+    }
+    else
+    {
+      shoes_score <- pca$x[i, 1:K]
+      difference <- shoes_score - scores_photo
+      distance[i] <-sqrt(sum(difference^2))
+    }  
+  }
+  
+  
+  top5 <- order(distance)[1:5]
+  
+  top5_better <- data.frame(id = csv$id[top5], category = csv$category[top5], distance = round(distance[top5], 1))
+  
+  final <- table(top5_better$category)
+  final_prediction <- names(which.max(final))
+  
+  result <- list(scores = scores_photo, top5 = top5, table = top5_better, prediction = final_prediction)
+  return(result)
+}
+
+#end of the code pfor tab1
+
+ui <- navbarPage("TinyData",
   tabPanel("Shoe Search",
     radioButtons("src", "Photo", c("Catalogue", "Self-check", "Upload"), inline = TRUE),
     numericInput("cat_id", "Catalogue id", 1, 1, 2000),
     selectInput("sc_file", "Self-check photo", sprintf("selfcheck_%02d.png", 1:4)),
     fileInput("photo", "Upload", accept = c(".jpg", ".jpeg", ".png")),
     sliderInput("K", "Number of PCs (K)", 1, 100, 20),
-    textOutput("result")   # TODO: best match, top 5, prediction, right or wrong
+    # textOutput("result")   # TODO: best match, top 5, prediction, right or wrong
+    plotOutput("closest_photo"),
+    plotOutput("photo_chosen"),
+    plotOutput("average_photo"),
+    plotOutput("photo_rebuild"),
+    tableOutput("top5"),
+    textOutput("prediction")
   ),
   tabPanel("Explain PCA",
     p("For the photo chosen in Shoe Search, show how PCA finds the match."),
@@ -56,7 +131,93 @@ ui <- navbarPage("TODO: team name",
 )
 
 server <- function(input, output, session) {
-  output$result <- renderText("TODO")
+  # output$result <- renderText("TODO")
+  output$photo_chosen <- renderPlot(
+    {
+      chosen <- input_chosen()
+      draw(chosen$photo)
+    }
+  )
+  output$average_photo <- renderPlot({draw(pca$center)})
+  
+  input_chosen <- reactive(
+    {
+      if (input$src == "Catalogue")
+      {
+        photo <- mX[input$cat_id, ]
+        id_excluded <- input$cat_id
+        true_category <- csv$category[input$cat_id]
+      }
+      else if (input$src == "Self-check")
+      {
+        photo <- get_photo_number(paste0("selfcheck/", input$sc_file))
+        id_excluded <- 0
+        true_category <- labels$category[labels$photo == input$sc_file]
+      }
+      else
+      {
+        req(input$photo)
+        photo <- get_photo_number(input$photo$datapath)
+        id_excluded <- 0
+        true_category <- "Unknown"
+      }
+      list(photo = photo, id_excluded = id_excluded, true_category = true_category)
+    }
+  )
+  
+  search <- reactive(
+    {
+      chosen <- input_chosen()
+      photo <- chosen$photo
+      id_excluded <- chosen$id_excluded
+      result <- shoe_search(photo, input$K, id_excluded)
+      result
+    }
+  )
+  output$closest_photo <- renderPlot(
+    {
+      result <- search()
+      best <- result$top5[1]
+      draw(mX[best, ])
+    }
+  )
+  
+  output$top5 <- renderTable(
+    {
+      result <- search()
+      result$table
+    }
+  )
+  
+  output$photo_rebuild <- renderPlot(
+    {
+      result <- search()
+      scores <- result$scores
+      rebuild <- pca$center + pca$rotation[, 1:input$K] %*% scores
+      draw(as.numeric(rebuild))
+    }
+  )
+  
+  output$prediction <- renderText(
+    {
+      result <- search()
+      prediction <- result$prediction
+      chosen <- input_chosen()
+      true_category <- chosen$true_category
+      if (true_category == prediction)
+      {
+        paste("Prediction : ", prediction, " RIGHT")
+      }
+      else if (true_category == "Unknown")
+      {
+        paste("Prediction : ", prediction, " Unknown")
+      }
+      else
+      {
+        paste("Prediction : ", prediction, " Wrong")
+      }
+    }
+  )
 
   # AI tab: fill in the two tables. Keep the columns.
   output$ai_table <- renderTable(data.frame(
