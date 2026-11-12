@@ -93,12 +93,19 @@ ui <- navbarPage("TinyData",
   tabPanel("Explain PCA",
     p("For the photo chosen in Shoe Search, show how PCA finds the match."),
     h4("Step 1. Average shoe"), p("x̅, the mean of the 2,000 photos."),
+    plotOutput("step_1"),
     h4("Step 2. Photo − average"), p("x − x̅, where the photo is brighter or darker than the average shoe."),
+    plotOutput("step_2"),
     h4("Step 3. Score map"), p("All catalogue photos on PC1 and PC2, colored by category, with your photo marked."),
+    plotOutput("step_3"),
     h4("Step 4. Eigenshoes"), p("Show PC1, PC2, … as pictures (their loadings drawn as 64 × 64 images), so we can see what shape each PC captures, and how much variance each explains."),
+    plotOutput("step_4"),
     h4("Step 5. Scores"), p("The photo’s first K PC scores, the numbers used to find the match."),
+    plotOutput("step_5"),
     h4("Step 6. Rebuild"), p("The photo rebuilt from the average shoe and the first K eigenshoes, for several K."),
-    h4("More"), p("Anything else you want to show or explain related to it.")
+    plotOutput("step_6"),
+    h4("More"), p("Anything else you want to show or explain related to it."),
+    plotOutput("more")
   ),
   tabPanel("Our Shoes",
     p("Can your app recognize real shoes it has never seen?"),
@@ -218,6 +225,86 @@ server <- function(input, output, session) {
       }
     }
   )
+  
+  #tab2 by us
+  
+  output$step_1 <- renderPlot(
+    {
+      draw(pca$center)
+    }
+  )
+  
+  output$step_2 <- renderPlot(
+    {
+      photo_chosen <- input_chosen()
+      result = photo_chosen$photo - pca$center + 128
+      draw(result)
+    }
+  )
+  
+  output$step_3 <- renderPlot(
+    {
+      pc1 <- pca$x[, 1]
+      pc2 <- pca$x[, 2]
+      list_category <- as.numeric(factor(csv$category))
+      photo_chosen <- input_chosen()
+      plot(pc1, pc2, col = list_category, cex = 0.5)
+      
+      result = photo_chosen$photo - pca$center
+      pc1_photo_chosen <- sum(result * pca$rotation[, 1])
+      pc2_photo_chosen <- sum(result * pca$rotation[, 2])
+      points(pc1_photo_chosen, pc2_photo_chosen, pch = 4, cex = 2, lwd = 6)
+    }
+  )
+  
+  output$step_4 <- renderPlot(
+    {
+      variance <- summary(pca)$importance[2, ]
+      photo_chosen <- input_chosen()
+      result <- shoe_search(photo_chosen$photo, 10, 0)
+      scores <- result$scores
+      par(mfrow = c(1, 10)) #10 first PC
+      for (i in 1:10)
+      {
+        i_photo_pc <- pca$center + scores[i] * pca$rotation[, i]
+        draw(i_photo_pc)
+        title(paste("PC", i, " : variance : ", variance[i]
+                    ))
+      }
+    }
+  )
+  
+  output$step_5 <- renderPlot(
+    {
+      result <- search()
+      scores <- result$scores
+      plot(scores)
+    }
+  )
+  
+  output$step_6 <- renderPlot(
+    {
+      photo_chosen <- input_chosen()
+      result <- shoe_search(photo_chosen$photo, 100, 0)
+      scores <- result$scores
+      par(mfrow = c(1, 5))
+      list_K <- c(2, 10, 20, 50, 100)
+      for (i in list_K)
+      {
+        rebuild <- pca$center + pca$rotation[, 1:i] %*% scores[1:i]
+        draw(as.numeric(rebuild))
+        title(paste("nb K : ", i))
+      }
+    }
+  )
+  
+  output$more <- renderPlot(
+    {
+      factoextra::fviz_eig(pca, ncp = 30) # I tried 100 but way too much
+    }
+  )
+  
+  #end tab2
 
   # AI tab: fill in the two tables. Keep the columns.
   output$ai_table <- renderTable(data.frame(
