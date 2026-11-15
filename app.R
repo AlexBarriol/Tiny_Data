@@ -4,6 +4,7 @@
 # ============================================================
 library(shiny)
 source("helpers.R")   # pca, get_scores(), rebuild(), search_top(), predict_cat(), img_to_vec()
+source("tab4_data1.R")
 
 # ---- 앱이 켜질 때 한 번만 준비하는 것 ----------------------------------
 sc_labels <- read.csv("data/selfcheck/labels.csv")          # photo, category
@@ -152,16 +153,8 @@ ui <- navbarPage("TODO: team name",
                             tableOutput("our_all")
                           )
                  ),
-                 tabPanel("Data 1",
-                          p("One Project 1 dataset, descriptive results only (filter, sort, count, mean, median, rate, group summary)."),
-                          p("It should include:"),
-                          tags$ul(
-                            tags$li("the question you are trying to answer;"),
-                            tags$li("the inputs that show it (e.g., the filter, grouping or time range you choose);"),
-                            tags$li("the result in numbers;"),
-                            tags$li("why it matters;"),
-                            tags$li("how this finding helps your next analysis of this dataset."))
-                 ),
+                 data1_ui,
+                 
                  tabPanel("AI",
                           h4("Ethics statement"),
                           p("We understand the rules on data and AI use for this project, including following the license and privacy rules",
@@ -180,6 +173,7 @@ ui <- navbarPage("TODO: team name",
 # Server
 # ============================================================
 server <- function(input, output, session) {
+  data1_server(input, output)
   
   # ---- ① 고른 사진을 준비: 벡터 x, 이름, 정답, 검색에서 뺄 id ----------
   query <- reactive({
