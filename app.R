@@ -34,6 +34,7 @@ for (i in 1:2000)
 }
 
 pca <- prcomp(mX, center = TRUE, scale. = FALSE)
+gc()
 
 draw <- function(photo)
 {
