@@ -26,7 +26,7 @@ data1_ui <- tabPanel("Data 1",
                      sidebarLayout(
                        sidebarPanel(
                          sliderInput("d1_year", "Years", 2020, 2025, c(2020, 2025), step = 1, sep = ""),
-                         selectInput("d1_month", "Months", month.abb, month.abb, multiple = TRUE),
+                         checkboxGroupInput("d1_month", "Months", month.abb, month.abb, inline = TRUE),
                          checkboxGroupInput("d1_day", "Weekdays", levels(bike$weekday), levels(bike$weekday), inline = TRUE),
                          sliderInput("d1_hour", "Hours", 0, 23, c(0, 23), step = 1),
                          radioButtons("d1_group", "Group by", d1_groups),

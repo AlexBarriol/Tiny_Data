@@ -197,3 +197,4 @@ for (i in seq_along(vecs)) {
   plot(as.raster(matrix(vecs[[i]], 64, 64)))
   title(info$label[i], font.main = 1)
 }
+

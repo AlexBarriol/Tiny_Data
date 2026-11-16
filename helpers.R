@@ -87,7 +87,12 @@ img_to_vec <- function(path) {
 
 
 
-
+shrink <- function(a, max_side = 800) {
+  k <- ceiling(max(dim(a)[1:2]) / max_side)
+  if (k <= 1) return(a)
+  r <- seq(1, dim(a)[1], by = k); c <- seq(1, dim(a)[2], by = k)
+  if (length(dim(a)) == 2) a[r, c] else a[r, c, , drop = FALSE]
+}
 
 
 
@@ -95,7 +100,7 @@ img_to_vec <- function(path) {
 # 배경을 흰색으로 맞추기 → 신발 부분만 잘라내기 → 여백 두고 정사각형 → 64×64
 photo_to_vec <- function(path, margin = 0.06, thr = 0.75) {
   ext <- tolower(tools::file_ext(path))
-  a   <- if (ext %in% c("jpg", "jpeg")) readJPEG(path) else readPNG(path)
+  a   <- shrink(if (ext %in% c("jpg", "jpeg")) readJPEG(path) else readPNG(path))
   g   <- to_gray(a)
   g   <- pmin(g / max(quantile(g, 0.9), 1e-6), 1)    # 밝은 배경(상위 10%)을 흰색(1)으로
   dark <- g < thr                                     # 신발로 볼 어두운 픽셀
@@ -113,7 +118,7 @@ photo_to_vec <- function(path, margin = 0.06, thr = 0.75) {
 # 갤러리에 보여줄 작은 컬러 사진 (size × size)
 photo_thumb <- function(path, size = 200) {
   ext <- tolower(tools::file_ext(path))
-  a   <- if (ext %in% c("jpg", "jpeg")) readJPEG(path) else readPNG(path)
+  a   <- shrink(if (ext %in% c("jpg", "jpeg")) readJPEG(path) else readPNG(path))
   if (length(dim(a)) == 2) a <- array(a, c(dim(a), 3))   # 흑백이면 3채널로
   a   <- a[, , 1:3, drop = FALSE]                        # 투명도 채널은 버림
   ch  <- lapply(1:3, function(k) resize_mat(pad_square(a[, , k]), size))

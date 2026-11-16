@@ -3,6 +3,7 @@
 # 완성: Shoe Search, Explain PCA  (Our Shoes, Data 1, AI는 템플릿 그대로)
 # ============================================================
 library(shiny)
+options(shiny.maxRequestSize = 20 * 1024^2)
 source("helpers.R")   # pca, get_scores(), rebuild(), search_top(), predict_cat(), img_to_vec()
 source("tab4_data1.R")
 
@@ -191,7 +192,7 @@ server <- function(input, output, session) {
            exclude = NULL)
     } else {
       validate(need(input$photo, "Upload a JPG or PNG photo of a shoe."))
-      list(x       = img_to_vec(input$photo$datapath),
+      list(x       = photo_to_vec(input$photo$datapath),
            name    = input$photo$name,
            truth   = if (input$up_cat == "Unknown") NA else input$up_cat,
            exclude = NULL)
