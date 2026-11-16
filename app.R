@@ -241,6 +241,7 @@ ui <- navbarPage("TinyData",
                           plotOutput("step_3", height = "450px"),  # left: full map, right: zoom on the 30 nearest points
                           hr(),
                           h4("Step 4. Eigenshoes"), p("PC1 to PC10 as pictures: the loadings of each PC drawn as a 64 × 64 image (red = positive, blue = negative), with the share of variance it explains."),
+                          plotOutput("step_4", height = "350px"),
                           hr(),
                           h4("Step 5. Scores"), p("The photo’s first K PC scores, the numbers used to find the match, next to the best match’s scores."),
                           plotOutput("step_5", height = "300px"),
