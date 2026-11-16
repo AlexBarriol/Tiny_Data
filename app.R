@@ -87,7 +87,6 @@ get_our_photo_number <- function(path, mirror)
   {
     img <- image_flop(img) # left <-> right, so the toe points to the left like the catalogue
   }
-  img <- image_resize(img, "64x64")
   img <- image_extent(img, "64x64", color = "white")
   
   result <- as.numeric(as.integer(image_data(img, channels = "gray")))
@@ -325,7 +324,7 @@ ui <- navbarPage("TinyData",
                             "of every dataset we used, understanding all of our code, and knowing that presenting AI output as our own work may be",
                             "academic misconduct. We certify that we have followed all of them. Any violation is our responsibility,",
                             "and we agree to receive an F in this course if we have not."),
-                          p("Signed: TODO (every member)"),
+                          p("Signed: Alex Arnaud BARRIOL, TODO (every member)"),
                           h4("What AI did and what we did"),
                           tableOutput("ai_table"),
                           h4("Reflection"),
@@ -747,12 +746,12 @@ server <- function(input, output, session) {
   # AI tab: fill in the two tables. Keep the columns.
   output$ai_table <- renderTable(data.frame(
     Tab           = c("Shoe Search", "Explain PCA", "Our Shoes", "Data 1"),
-    `What AI did` = c("TODO", "TODO", "TODO", "TODO"),
-    `What we did` = c("TODO", "TODO", "TODO", "TODO"),
+    `What AI did` = c("TODO", "TODO", "TODO", "AI criticised our plans and helped us structure the question and graphics, he also performed a code review to be sure we didn't make any useless mistakes. Also we used it to merge our different code because we had each some good ideas."),
+    `What we did` = c("TODO", "TODO", "TODO", "We chose the dataset and the question, then we prepared the dataset so it's lighter and fits exactly what we need, because its original size is way too big (7 GB). We planned what graphics we would need and why, we also wrote the conclusions"),
     check.names = FALSE))
   output$ai_reflection <- renderTable(data.frame(
-    Member     = c("TODO", "TODO", "TODO", "TODO", "TODO"),
-    Reflection = c("TODO: one or two paragraphs: what AI helped with, where it failed, what you learned.",
+    Member     = c("Alex Arnaud BARRIOL", "TODO", "TODO", "TODO", "TODO"),
+    Reflection = c("I used AI to structure my thinking, I explained my plans and asked Claude to criticise them, so I could improve it. I also used it to do some code reviews and to understand the server part of Shiny. It was not always right, it made some criticisms that were not justified, and it tends to over-complexify a lot of things. But it was really useful to question my way of thinking, to review the code and understand some errors and test some edge cases.",
                    "TODO", "TODO", "TODO", "TODO")))
 }
 
