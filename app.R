@@ -42,6 +42,16 @@ draw <- function(photo)
   plot(as.raster(result / 255))
 }
 
+draw_color <- function(values, name = "")
+{
+  lim <- max(abs(values))
+  colors <- colorRampPalette(c("#2166ac", "white", "#b2182b"))(101)
+  result <- matrix(colors[round(50 * values / lim) + 51], 64, 64)
+  par(mar = c(0.5, 0.5, 2.5, 0.5), cex.main = 1.5)
+  plot(as.raster(result))
+  title(name)
+}
+
 shoe_search <- function(photo, K, id_excluded)
 {
   scores_photo <- as.numeric((photo - pca$center) %*% pca$rotation[, 1:K])
@@ -80,13 +90,13 @@ shoe_search <- function(photo, K, id_excluded)
 get_our_photo_number <- function(path, mirror)
 {
   img <- image_read(path)
-  img <- image_resize(img, "64x64")
   img <- image_convert(img, colorspace = "gray")
   img <- image_level(img, white_point = 75) # the grey floor becomes white, like the catalogue background
   if (mirror == TRUE)
   {
     img <- image_flop(img) # left <-> right, so the toe points to the left like the catalogue
   }
+  img <- image_resize(img, "64x64")
   img <- image_extent(img, "64x64", color = "white")
   
   result <- as.numeric(as.integer(image_data(img, channels = "gray")))
@@ -107,7 +117,6 @@ for (i in 1:n_our)
   path <- paste0("our_shoes/", our_files[i])
   our_mX[i, ] <- get_our_photo_number(path, FALSE)
   our_mX_mirror[i, ] <- get_our_photo_number(path, TRUE)
-  gc() # gain memory deleting after each
 }
 # end of the code for tab3
 
@@ -230,8 +239,7 @@ ui <- navbarPage("TinyData",
                           h4("Step 3. Score map"), p("All catalogue photos on PC1 and PC2, colored by category, with your photo marked."),
                           plotOutput("step_3", height = "450px"),  # left: full map, right: zoom on the 30 nearest points
                           hr(),
-                          h4("Step 4. Eigenshoes"), p("Show PC1, PC2, … as pictures (their loadings drawn as 64 × 64 images), so we can see what shape each PC captures, and how much variance each explains."),
-                          plotOutput("step_4", height = "350px"),
+                          h4("Step 4. Eigenshoes"), p("PC1 to PC10 as pictures: the loadings of each PC drawn as a 64 × 64 image (red = positive, blue = negative), with the share of variance it explains."),,
                           hr(),
                           h4("Step 5. Scores"), p("The photo’s first K PC scores, the numbers used to find the match, next to the best match’s scores."),
                           plotOutput("step_5", height = "300px"),
@@ -324,7 +332,7 @@ ui <- navbarPage("TinyData",
                             "of every dataset we used, understanding all of our code, and knowing that presenting AI output as our own work may be",
                             "academic misconduct. We certify that we have followed all of them. Any violation is our responsibility,",
                             "and we agree to receive an F in this course if we have not."),
-                          p("Signed: Alex Arnaud BARRIOL, TODO (every member)"),
+                          p("Signed: TODO (every member)"),
                           h4("What AI did and what we did"),
                           tableOutput("ai_table"),
                           h4("Reflection"),
@@ -464,10 +472,10 @@ server <- function(input, output, session) {
       par(mfrow = c(1, 2)) # 2 graphs side by side
       
       # graph 1 : all the 2000 shoes
-      plot(pc1, pc2, col = list_category, cex = 0.5, main = "PC1 - PC2 score map")
+      plot(pc1, pc2, col = list_category, pch = 16, cex = 0.5, main = "PC1 - PC2 score map")
       points(pc1_photo_chosen, pc2_photo_chosen, pch = 21, cex = 2.5, lwd = 3, col = "navy", bg = "white")
       text(pc1_photo_chosen, pc2_photo_chosen, "Selected", pos = 4, col = "navy")
-      legend("topright", legend = levels(factor(csv$category)), col = 1:4, pch = 1)
+      legend("topright", legend = levels(factor(csv$category)), col = 1:4, pch = 16)
       
       # graph 2 : zoom on the 30 shoes closest to our photo (on PC1 and PC2 only)
       distance <- sqrt((pc1 - pc1_photo_chosen)^2 + (pc2 - pc2_photo_chosen)^2)
@@ -482,17 +490,12 @@ server <- function(input, output, session) {
   
   output$step_4 <- renderPlot(
     {
-      variance <- summary(pca)$importance[2, ]
-      photo_chosen <- input_chosen()
-      result <- shoe_search(photo_chosen$photo, 10, 0)
-      scores <- result$scores
+            variance <- summary(pca)$importance[2, ]
       par(mfrow = c(2, 5)) #10 first PC, on 2 rows of 5
       for (i in 1:10)
       {
-        i_photo_pc <- pca$center + scores[i] * pca$rotation[, i]
-        draw(i_photo_pc)
-        title(paste("PC", i, " : variance : ", variance[i]
-        ))
+        draw_color(pca$rotation[, i], paste0("PC", i, " (", round(100 * variance[i], 1), "%)"))
+      }
       }
     }
   )
@@ -746,12 +749,12 @@ server <- function(input, output, session) {
   # AI tab: fill in the two tables. Keep the columns.
   output$ai_table <- renderTable(data.frame(
     Tab           = c("Shoe Search", "Explain PCA", "Our Shoes", "Data 1"),
-    `What AI did` = c("TODO", "TODO", "TODO", "AI criticised our plans and helped us structure the question and graphics, he also performed a code review to be sure we didn't make any useless mistakes. Also we used it to merge our different code because we had each some good ideas."),
-    `What we did` = c("TODO", "TODO", "TODO", "We chose the dataset and the question, then we prepared the dataset so it's lighter and fits exactly what we need, because its original size is way too big (7 GB). We planned what graphics we would need and why, we also wrote the conclusions"),
+    `What AI did` = c("TODO", "TODO", "TODO", "TODO"),
+    `What we did` = c("TODO", "TODO", "TODO", "TODO"),
     check.names = FALSE))
   output$ai_reflection <- renderTable(data.frame(
-    Member     = c("Alex Arnaud BARRIOL", "TODO", "TODO", "TODO", "TODO"),
-    Reflection = c("I used AI to structure my thinking, I explained my plans and asked Claude to criticise them, so I could improve it. I also used it to do some code reviews and to understand the server part of Shiny. It was not always right, it made some criticisms that were not justified, and it tends to over-complexify a lot of things. But it was really useful to question my way of thinking, to review the code and understand some errors and test some edge cases.",
+    Member     = c("TODO", "TODO", "TODO", "TODO", "TODO"),
+    Reflection = c("TODO: one or two paragraphs: what AI helped with, where it failed, what you learned.",
                    "TODO", "TODO", "TODO", "TODO")))
 }
 
