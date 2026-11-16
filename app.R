@@ -80,6 +80,7 @@ shoe_search <- function(photo, K, id_excluded)
 get_our_photo_number <- function(path, mirror)
 {
   img <- image_read(path)
+  img <- image_resize(img, "64x64")
   img <- image_convert(img, colorspace = "gray")
   img <- image_level(img, white_point = 75) # the grey floor becomes white, like the catalogue background
   if (mirror == TRUE)
@@ -107,6 +108,7 @@ for (i in 1:n_our)
   path <- paste0("our_shoes/", our_files[i])
   our_mX[i, ] <- get_our_photo_number(path, FALSE)
   our_mX_mirror[i, ] <- get_our_photo_number(path, TRUE)
+  gc() # gain memory deleting after each
 }
 # end of the code for tab3
 
