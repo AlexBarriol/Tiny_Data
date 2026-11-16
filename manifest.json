@@ -2557,7 +2557,7 @@
         "Maintainer": "Jeroen Ooms <jeroenooms@gmail.com>",
         "Repository": "CRAN",
         "Date/Publication": "2026-02-28 15:40:02 UTC",
-        "Built": "R 4.6.2; x86_64-w64-mingw32; 2026-11-09 02:56:19 UTC; windows",
+        "Built": "R 4.6.2; x86_64-w64-mingw32; 2026-11-11 02:21:47 UTC; windows",
         "Archs": "x64",
         "RemoteType": "standard",
         "RemotePkgRef": "magick",
@@ -4409,19 +4409,25 @@
   },
   "files": {
     "app.R": {
-      "checksum": "071ad0d8c1ca249ed6679a0aead6e6c1"
+      "checksum": "8c19ea0f9f09a8d1403c524b21b20b32"
     },
-    "Consigne.pdf": {
-      "checksum": "c6ad968d0eaba6465ee976c8be70380a"
+    "bike_summary_2020_2025.csv": {
+      "checksum": "8dfa51a30d0b27802b038fbb4643db7d"
     },
     "deployment.R": {
-      "checksum": "453edb899bbdba0165e3b4f3ee8af35c"
+      "checksum": "8e86f14e8ced07cadc4e8a2231a55857"
     },
-    "fonction.R": {
-      "checksum": "a74bf81b3d5d0908ad9f2c8f4500b687"
+    "our_shoes/yunseo_Sandals_2.jpeg": {
+      "checksum": "0d3f4b5f1af2819ea8dce345b3d7f569"
+    },
+    "our_shoes/yunseo_Shoes_1.jpeg": {
+      "checksum": "e19bcfd620ff5a811a5d1352991e26b7"
+    },
+    "our_shoes/yunseo_Slippers_3.jpeg": {
+      "checksum": "e542b99b68005c6a1d780f82b2f0961e"
     },
     "selfcheck/labels.csv": {
-      "checksum": "add9f56dea854746a2683d48f2ab53b6"
+      "checksum": "a44f78a1f895ed099f6997226b17af71"
     },
     "selfcheck/selfcheck_01.png": {
       "checksum": "3d83ca7ac3e7838e93eaca6f1356ee87"
@@ -10437,9 +10443,6 @@
     },
     "shoes_meta.csv": {
       "checksum": "d5b6513e06160d2768bfa2875fa31f0b"
-    },
-    "test.R": {
-      "checksum": "6844020250d8f4ecbe1ea5ad3f532367"
     }
   },
   "users": null
