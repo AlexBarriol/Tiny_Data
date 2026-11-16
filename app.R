@@ -463,10 +463,10 @@ server <- function(input, output, session) {
       par(mfrow = c(1, 2)) # 2 graphs side by side
       
       # graph 1 : all the 2000 shoes
-      plot(pc1, pc2, col = list_category, cex = 0.5, main = "PC1 - PC2 score map")
+      plot(pc1, pc2, col = list_category, pch = 16, cex = 0.5, main = "PC1 - PC2 score map")
       points(pc1_photo_chosen, pc2_photo_chosen, pch = 21, cex = 2.5, lwd = 3, col = "navy", bg = "white")
       text(pc1_photo_chosen, pc2_photo_chosen, "Selected", pos = 4, col = "navy")
-      legend("topright", legend = levels(factor(csv$category)), col = 1:4, pch = 1)
+      legend("topright", legend = levels(factor(csv$category)), col = 1:4, pch = 16)
       
       # graph 2 : zoom on the 30 shoes closest to our photo (on PC1 and PC2 only)
       distance <- sqrt((pc1 - pc1_photo_chosen)^2 + (pc2 - pc2_photo_chosen)^2)
