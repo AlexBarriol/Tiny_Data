@@ -13,7 +13,7 @@ library(magick)
 get_photo_number <- function(path)
 {
   img <- image_read(path)
-  
+  img <- image_resize(img, "64x64")
   img <- image_convert(img, colorspace = "gray")
   img <- image_resize(img, "64x64")
   img <- image_extent(img, "64x64", color = "white") #in case the photo is not a squere
@@ -118,6 +118,7 @@ for (i in 1:n_our)
   path <- paste0("our_shoes/", our_files[i])
   our_mX[i, ] <- get_our_photo_number(path, FALSE)
   our_mX_mirror[i, ] <- get_our_photo_number(path, TRUE)
+  gc()
 }
 # end of the code for tab3
 
