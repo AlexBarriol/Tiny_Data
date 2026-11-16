@@ -239,7 +239,7 @@ ui <- navbarPage("TinyData",
                           h4("Step 3. Score map"), p("All catalogue photos on PC1 and PC2, colored by category, with your photo marked."),
                           plotOutput("step_3", height = "450px"),  # left: full map, right: zoom on the 30 nearest points
                           hr(),
-                          h4("Step 4. Eigenshoes"), p("PC1 to PC10 as pictures: the loadings of each PC drawn as a 64 × 64 image (red = positive, blue = negative), with the share of variance it explains."),,
+                          h4("Step 4. Eigenshoes"), p("PC1 to PC10 as pictures: the loadings of each PC drawn as a 64 × 64 image (red = positive, blue = negative), with the share of variance it explains."),
                           hr(),
                           h4("Step 5. Scores"), p("The photo’s first K PC scores, the numbers used to find the match, next to the best match’s scores."),
                           plotOutput("step_5", height = "300px"),
@@ -495,7 +495,6 @@ server <- function(input, output, session) {
       for (i in 1:10)
       {
         draw_color(pca$rotation[, i], paste0("PC", i, " (", round(100 * variance[i], 1), "%)"))
-      }
       }
     }
   )
