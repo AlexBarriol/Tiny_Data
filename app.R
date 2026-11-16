@@ -42,6 +42,16 @@ draw <- function(photo)
   plot(as.raster(result / 255))
 }
 
+draw_color <- function(values, name = "")
+{
+  lim <- max(abs(values))
+  colors <- colorRampPalette(c("#2166ac", "white", "#b2182b"))(101)
+  result <- matrix(colors[round(50 * values / lim) + 51], 64, 64)
+  par(mar = c(0.5, 0.5, 2.5, 0.5), cex.main = 1.5)
+  plot(as.raster(result))
+  title(name)
+}
+
 shoe_search <- function(photo, K, id_excluded)
 {
   scores_photo <- as.numeric((photo - pca$center) %*% pca$rotation[, 1:K])
@@ -229,8 +239,7 @@ ui <- navbarPage("TinyData",
                           h4("Step 3. Score map"), p("All catalogue photos on PC1 and PC2, colored by category, with your photo marked."),
                           plotOutput("step_3", height = "450px"),  # left: full map, right: zoom on the 30 nearest points
                           hr(),
-                          h4("Step 4. Eigenshoes"), p("Show PC1, PC2, … as pictures (their loadings drawn as 64 × 64 images), so we can see what shape each PC captures, and how much variance each explains."),
-                          plotOutput("step_4", height = "350px"),
+                          h4("Step 4. Eigenshoes"), p("PC1 to PC10 as pictures: the loadings of each PC drawn as a 64 × 64 image (red = positive, blue = negative), with the share of variance it explains."),,
                           hr(),
                           h4("Step 5. Scores"), p("The photo’s first K PC scores, the numbers used to find the match, next to the best match’s scores."),
                           plotOutput("step_5", height = "300px"),
@@ -481,17 +490,12 @@ server <- function(input, output, session) {
   
   output$step_4 <- renderPlot(
     {
-      variance <- summary(pca)$importance[2, ]
-      photo_chosen <- input_chosen()
-      result <- shoe_search(photo_chosen$photo, 10, 0)
-      scores <- result$scores
+            variance <- summary(pca)$importance[2, ]
       par(mfrow = c(2, 5)) #10 first PC, on 2 rows of 5
       for (i in 1:10)
       {
-        i_photo_pc <- pca$center + scores[i] * pca$rotation[, i]
-        draw(i_photo_pc)
-        title(paste("PC", i, " : variance : ", variance[i]
-        ))
+        draw_color(pca$rotation[, i], paste0("PC", i, " (", round(100 * variance[i], 1), "%)"))
+      }
       }
     }
   )
